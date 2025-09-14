@@ -1,0 +1,42 @@
+This is the code for the temperature sensing circuits simulated using Wokwi.
+
+const int thermistorPin = A0;
+const int ledPin = 3;
+
+int rawValue;
+float temperature;
+String state;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+}
+
+void loop() {
+  rawValue = analogRead(thermistorPin);
+  float V = rawValue * (3.3 / 1023.0);
+  float R = (3.3 * 10000.0 / V) - 10000.0;
+  const float BETA = 3950.0;
+  float tempK = 1.0 / ((1.0 / 298.15) + (1.0 / BETA) * log(R / 10000.0));
+  temperature = tempK - 273.15;
+
+  if (temperature < 25.0) {
+    analogWrite(ledPin, 0);   
+    state="off";
+  } 
+  else if (temperature < 30.0 && temperature > 25.0) {
+    analogWrite(ledPin, 25);  
+    state="10%";
+  } 
+  else if (temperature > 30.0) {
+    analogWrite(ledPin, 255);
+    state="max";
+  }
+  Serial.print("Temp: ");
+  Serial.print(temperature);
+  Serial.print(" °C");
+  Serial.print("    Fan state: ");
+  Serial.println(state);
+
+  delay(500);
+}
